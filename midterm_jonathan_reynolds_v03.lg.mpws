@@ -1,0 +1,462 @@
+v03
+
+midterm.mpws
+
+
+
+
+
+%group,name="Problem 0",description="Programmer's information."
+========================================================================================================
+Problem 0
+
+In the following fold, replace "xxx" with your
+first name, replace "yyy" with your last name, and
+replace "000000" with your SSU ID number:
+
+%javascript,name="Problem 0",subtype="problem",unassign_all="true",unassign_all="true",truncate="6000",timeout="5000"
+
+[
+["firstName", "Jonathan"],
+["lastName", "Reynolds"],
+["ssuIDNumber", "272855"],
+];
+
+%/javascript
+
+
+%javascript_grade,name="Problem 0"
+
+LocalSymbols(foldResult)
+{
+    // --------------------------------------------------------
+    
+    FoldGrade("MathPiper version >= .235", 1, True)
+    {
+        StringToNumber(Version()) >=? .235;
+    }
+    
+    // --------------------------------------------------------
+    
+    FoldGrade("The code does not throw an exception when evaluated", 1, True)
+    {
+        ExceptionCatch(foldResult := Eval(?foldCode[1]), "", 'Exception) !=? 'Exception;
+    }
+    
+    // --------------------------------------------------------
+    
+    FoldGrade("The variable \"firstName\" a string that is not \"xxx\"", 1, True)
+    {
+        String?(foldResult["firstName"]) &? foldResult["firstName"] !=? "xxx";
+    }
+    
+    // --------------------------------------------------------
+    
+    FoldGrade("The variable \"lastName\" is a string that is not \"yyy\"", 1, True)
+    {
+        String?(foldResult["lastName"]) &? foldResult["lastName"] !=? "yyy";
+    }
+    
+    // --------------------------------------------------------
+    
+    FoldGrade("The variable \"ssuIDNumber\" is not \"000000\"", 1, True)
+    {
+        foldResult["ssuIDNumber"] !=? "000000" &? foldResult["ssuIDNumber"] !=? 0;
+    }
+}
+
+%/javascript_grade
+
+%/group
+
+
+
+%group,name="Problem 1",description="Count all lowercase t"
+========================================================================================================
+Problem 1
+
+Implement a package delivery tracking system.
+
+Classes:
+user
+    username: string
+    password: string
+    creditCard: string
+    billingAddress: address
+    orders: [order]
+    numberNotDeliveredBy(date): integer "Returns the number of orders that will not come by date"
+    numberSameAddress(): integer
+    
+userGold
+    numberOfPendingGoldOrders(): integer "Number of order less than or equal to 2 day shipping"
+
+address
+    POBox: string
+    ZIP: integer
+    street: string
+    city: string
+    state: string
+    country: string 
+    isPOBox(): bool
+    isInState(address): bool
+
+order
+    items: [item]
+    shippingCost: float
+    sendTo: address
+    purchaseDate: date
+    deliveryDate: date  
+    totalCost(): float
+    hasBeenDelivered(date): bool
+    shippingDays(): integer
+    
+item
+    itemID: integer
+    itemName: string
+    itemCost: positive float
+    quantity: integer 
+    totalCost(): float
+    
+date
+    year: integer
+    month: integer
+    day: integer
+    isAfter(date): bool
+    differenceDays(date): integer
+
+============================================
+TEST CODE:
+let users = [];
+
+let address01 = new address("",44324,"somewhere rd. 130","rockville","OH","USA");
+let address02 = new address("123",41424,"nowhere rd. 116","jackton","WV","USA");
+let address03 = new address("123",41424,"nowhere rd. 116","jackton","WV","USA");
+
+users.push(new user("ajones","1414abcd","3/4 bank, 12345678",address01));
+users.push(new user("msmith","1a2b3c","noco bank, 32132132",address02));
+users.push(new userGold("rsmith","a1b2c3","noco bank, 32132132",address03));
+
+let item01 = new item(34,"widget 4",32.2,1);
+let item02 = new item(33,"dumbShoes",59.2,2);
+let item03 = new item(56,"wrench",4.2,1);
+let item04 = new item(54,"widget 10",37,1);
+let item05 = new item(65,"gray boxy",13,2);
+let item06 = new item(85,"bike seat",41,1);
+let item07 = new item(538,"wrench",4.2,3);
+
+let date01 = new date(2018,2,4);
+let date02 = new date(2018,2,7);
+let date03 = new date(2018,3,30);
+let date04 = new date(2018,4,2);
+let date05 = new date(2018,12,30);
+let date06 = new date(2019,1,1);
+
+users[0].orders.push(new order([item01,item02,item03],20,address01,date01,date02))
+users[0].orders.push(new order([item04,item05,item06,item07],14,address01,date03,date04))
+users[1].orders.push(new order([item04,item01,item06,item03],3,address02,date05,date06))
+users[2].orders.push(new order([item03,item01,item06,item02],14,address02,date05,date06))
+
+for(let indexOne = 0; indexOne < users.length; indexOne++)
+{
+    console.log(users[indexOne].numberNotDeliveredBy(date03));
+    console.log(users[indexOne].numberNotDeliveredBy(date06));
+    console.log(users[indexOne].numberSameAddress());
+    if(users[indexOne] instanceof userGold)
+    {
+        console.log(users[indexOne].numberOfPendingGoldOrders());
+    }
+    
+    for(let indexTwo = 0; indexTwo < users.length; indexTwo++)
+    {
+        console.log(users[indexOne].orders[indexTwo].shippingDays() );
+        console.log(users[indexOne].orders[indexTwo].hasBeenDelivered(date01) );
+        console.log(users[indexOne].orders[indexTwo].hasBeenDelivered(date05) );
+        console.log(users[indexOne].orders[indexTwo].totalCost() );
+        console.log("");
+    }
+    console.log("");
+}
+
+    
+%javascript,name="Problem 1",subtype="problem",unassign_all="true",truncate="1500",timeout="5000"
+
+class user
+{
+    constructor(username, password, creditCard, billingAddress)
+    {
+        this.username = username;
+        this.password = password;
+        this.creditCard = creditCard;
+        this.billingAddress = billingAddress;
+        this.orders = [];
+    }
+    
+    numberNotDeliveredBy(date)
+    {
+        var notDelivered = 0;
+        for(let i = 0; i < this.orders.length; i++)
+        {
+            if(this.orders[i].deliveryDate != date)
+            {
+                notDelivered += 1;
+            }
+        }
+        return notDelivered;
+    }
+    
+    numberSameAddress()
+    {
+        var sameAdd = 0;
+        for(let i = 0; i < this.orders.length; i++)
+        {
+            if(this.orders[i].sendTo == this.billingAddress)
+            {
+                sameAdd += 1;
+            }
+        }
+        return sameAdd;
+    }
+}
+
+class userGold extends user
+{
+    constructor(username, password, creditCard, billingAddress)
+    {
+        super(username, password, creditCard, billingAddress);
+    }
+    
+    numberOfPendingGoldOrders()
+    {
+        var notDelivered = 0;
+        for(let i = 0; i < this.orders.length; i++)
+        {
+            if(this.orders[i].deliveryDate != date)
+            {
+                notDelivered += 1;
+            }
+        }
+        return notDelivered;
+    }
+}
+
+class address
+{
+    constructor(ZIP, city, state, street, country, POBox)
+    {
+        this.ZIP = ZIP;
+        this.city = city;
+        this.state = state;
+        this.street = street;
+        this.country = country;
+        this.POBox = POBox;
+    }
+    
+    isPOBox()
+    {
+        
+    }
+    
+    isInState(address)
+    {
+        
+    }
+}
+
+class order
+{
+    constructor(items, shippingCost, sendTo, purchaseDate, deliveryDate)
+    {
+        this.items = items;
+        this.shippingCost = shippingCost;
+        this.sendTo = sendTo;
+        this.purchaseDate = purchaseDate;
+        this.deliveryDate = deliveryDate;
+    }
+    
+    totalCost()
+    {
+        for(let i = 0; i < this.items.length; i++)
+        {
+            var itemCost = this.items[i].totalCost();
+            var totalOrderCost = this.shippingCost + itemCost;
+        }
+        return totalOrderCost;
+    }
+    
+    hasBeenDelivered(date)
+    {
+        if (this.deliveryDate == date)
+        {
+            return true;
+        }else{
+            return false;   
+        }
+    }
+    
+    shippingDays()
+    {
+        var shippingDays = this.deliveryDate.differenceDays(this.purchaseDate);
+        return shippingDays;
+    }
+    
+    
+}
+
+class item
+{
+    constructor(itemID, itemName, itemCost, quantity)
+    {
+        this.itemID = itemID;
+        this.itemName = itemName;
+        this.itemCost = itemCost;
+        this.quantity = quantity;
+    }
+    
+    totalCost()
+    {
+        var totalCost = this.itemCost * this.quantity;
+        return totalCost;
+    }
+}
+
+class date
+{
+    constructor(year, month, day)
+    {
+        this.year = year;
+        this.month = month;
+        this.day = day;
+    }
+        
+    isAfter(date)
+    {
+        
+    }
+    
+    differenceDays(date)
+    {
+        var newMonth = this.month;
+        var newDay = this.day;
+        var daysInMonths = [31,28,31,30,31,30,31,31,30,31,30,31];
+        
+        newDay = date.day - this.day
+        if(newDay <= 0)
+        {
+            newMonth = this.month - 1;
+            if(newMonth <= 0)
+            {
+                newMonth = 12;
+            }
+            newDay += daysInMonths[newMonth];
+        }
+        return newDay;
+    }
+}
+
+//=========================================================================
+//=========================================================================
+//=========================================================================
+//=========================================================================
+
+let users = [];
+
+let address01 = new address("",44324,"somewhere rd. 130","rockville","OH","USA");
+let address02 = new address("123",41424,"nowhere rd. 116","jackton","WV","USA");
+let address03 = new address("123",41424,"nowhere rd. 116","jackton","WV","USA");
+
+users.push(new user("ajones","1414abcd","3/4 bank, 12345678",address01));
+users.push(new user("msmith","1a2b3c","noco bank, 32132132",address02));
+users.push(new userGold("rsmith","a1b2c3","noco bank, 32132132",address03));
+
+let item01 = new item(34,"widget 4",32.2,1);
+let item02 = new item(33,"dumbShoes",59.2,2);
+let item03 = new item(56,"wrench",4.2,1);
+let item04 = new item(54,"widget 10",37,1);
+let item05 = new item(65,"gray boxy",13,2);
+let item06 = new item(85,"bike seat",41,1);
+let item07 = new item(538,"wrench",4.2,3);
+
+let date01 = new date(2018,2,4);
+let date02 = new date(2018,2,7);
+let date03 = new date(2018,3,30);
+let date04 = new date(2018,4,2);
+let date05 = new date(2018,12,30);
+let date06 = new date(2019,1,1);
+
+users[0].orders.push(new order([item01,item02,item03],20,address01,date01,date02))
+users[0].orders.push(new order([item04,item05,item06,item07],14,address01,date03,date04))
+users[1].orders.push(new order([item04,item01,item06,item03],3,address02,date05,date06))
+users[2].orders.push(new order([item03,item01,item06,item02],14,address02,date05,date06))
+
+for(let indexOne = 0; indexOne < users.length; indexOne++)
+{
+    console.log(users[indexOne].username)
+    console.log(users[indexOne].numberNotDeliveredBy(date03));
+    console.log(users[indexOne].numberNotDeliveredBy(date06));
+    console.log(users[indexOne].numberSameAddress());
+    if(users[indexOne] instanceof userGold)
+    {
+        console.log(users[indexOne].numberOfPendingGoldOrders());
+    }
+    
+    for(let indexTwo = 0; indexTwo < users[indexOne].orders.length; indexTwo++)
+    {
+        console.log(users[indexOne].orders[indexTwo].shippingDays());
+        console.log(users[indexOne].orders[indexTwo].hasBeenDelivered(date01) );
+        console.log(users[indexOne].orders[indexTwo].hasBeenDelivered(date05) );
+        console.log(users[indexOne].orders[indexTwo].totalCost());
+        console.log("");
+    }
+    console.log("");
+}
+
+%/javascript
+
+    %output,parent="Problem 1",mpversion=".251",preserve="false"
+      ajones
+      2
+      2
+      2
+      25
+      false
+      false
+      24.2
+      
+      28
+      false
+      false
+      26.6
+      
+      
+      msmith
+      1
+      0
+      1
+      29
+      false
+      false
+      7.2
+      
+      
+      rsmith
+      1
+      0
+      0
+      1
+      29
+      false
+      false
+      132.4
+.   %/output
+
+
+
+%/group
+
+
+
+
+
+
+
+
